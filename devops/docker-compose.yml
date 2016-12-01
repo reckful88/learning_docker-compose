@@ -1,0 +1,48 @@
+version: '2'
+
+services:
+ git:
+  container_name: gitlab
+  image: gitlab/gitlab-ce
+  volumes:
+    - "/data/gitlab/:/gitlab/data/"
+
+ ci:
+  container_name: jenkins
+  image: jenkins
+  volumes:
+    - "/data/jenkins/:/jenkins/data/"
+
+ db:
+  container_name: db
+  image: mariadb
+  ports:
+    - "3306:3306"
+  volumes:
+    - "/data/mysql/:/var/lib/mysql/"
+  env_file:
+    - ./service.env
+
+ cache:
+  container_name: cache
+  image: redis
+
+
+ api:
+  container_name: api
+  image: webdevops/php-nginx
+  volumes:
+    - "/opt/production/api/:/opt/production/"
+  ports:
+    - "83:80"
+  depends_on:
+   - db
+   - cache
+  env_file:
+    - ./service.env
+  links:
+   - db:database
+   - cache
+  depends_on:
+   - db
+   - cache
